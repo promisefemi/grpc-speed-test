@@ -13,8 +13,11 @@ import (
 	"log"
 	"net"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"strings"
+	"sync"
+	"syscall"
 	"time"
 )
 
@@ -35,6 +38,13 @@ type service struct {
 	proto.UnimplementedCacheServer
 	cache *model.DeviceCache
 }
+type counter struct {
+	sync.Mutex
+	entries                  []int
+	currentCount, totalCount int
+}
+
+var deviceCount counter
 
 func (s service) GetDevice(ctx context.Context, deviceInput *proto.DeviceInput) (*proto.Device, error) {
 	protoDevice := new(proto.Device)
@@ -48,8 +58,11 @@ func (s service) GetDevice(ctx context.Context, deviceInput *proto.DeviceInput) 
 		log.Println(err)
 		return nil, err
 	}
+	deviceCount.Lock()
+	deviceCount.currentCount++
+	deviceCount.totalCount++
+	deviceCount.Unlock()
 	return protoDevice, nil
-
 }
 
 func newService(cache *model.DeviceCache) *service {
@@ -73,6 +86,33 @@ func main() {
 	cachedService := newService(devicesCache)
 	grpcServer := grpc.NewServer()
 	proto.RegisterCacheServer(grpcServer, cachedService)
+
+	ticker := time.NewTicker(1 * time.Second)
+	go func() {
+		for range ticker.C {
+			//fmt.Println("Num of Pool", pool.GetNumberOfOpenConnections())
+			deviceCount.Lock()
+			fmt.Printf("Get RPC Count: %d -- TimeStamp: %d \n", deviceCount.currentCount, time.Now().Unix())
+			fmt.Printf("Total RPC Count: %d \n\n", deviceCount.totalCount)
+			deviceCount.entries = append(deviceCount.entries, deviceCount.currentCount)
+			deviceCount.currentCount = 0
+			deviceCount.Unlock()
+		}
+	}()
+
+	signalChannel := make(chan os.Signal, 1)
+	signal.Notify(signalChannel, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-signalChannel
+		ticker.Stop()
+		total := 0
+		for _, entry := range deviceCount.entries {
+			total += entry
+		}
+		fmt.Printf("\nTotal request handled %d\n", deviceCount.totalCount)
+		fmt.Printf("Average request made per second %d\n", total/len(deviceCount.entries))
+		os.Exit(0)
+	}()
 
 	log.Printf("Server is running on port %s", *port)
 	if err := grpcServer.Serve(listener); err != nil {
