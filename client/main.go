@@ -27,6 +27,7 @@ func main() {
 
 	port := flag.String("port", "9000", "Port")
 	thread := flag.Int("t", 1, "Thread")
+	env := flag.String("e", "", "Env")
 	flag.Parse()
 
 	poolConfig := &pool.PoolConfig{
@@ -39,6 +40,9 @@ func main() {
 			grpc.WithTransportCredentials(insecure.NewCredentials()),
 			grpc.WithBlock(),
 		},
+	}
+	if *env != "" {
+		poolConfig.Address = fmt.Sprintf("cached.tacticallinux.com:%s", *port)
 	}
 	var deviceId int64 = 6248148189135751453
 	poolCon := pool.NewClientPool(poolConfig)
@@ -75,7 +79,7 @@ func main() {
 		for _, entry := range deviceCount.entries {
 			total += entry
 		}
-		fmt.Printf("Average request made per second %d", total/len(deviceCount.entries))
+		fmt.Printf("\nAverage request made per second %d\n", total/len(deviceCount.entries))
 		os.Exit(0)
 	}()
 	for {
