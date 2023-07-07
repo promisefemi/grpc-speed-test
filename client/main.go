@@ -35,15 +35,15 @@ func main() {
 		MaxIdleConnection:     10,
 		ConnectionQueueLength: 1000,
 		NewClientDuration:     10 * time.Second,
-		Address:               "cached:9009",
-		//Address:               fmt.Sprintf(":%s", *port),
+		//Address:               "cached:9009",
+		Address: fmt.Sprintf(":%s", *port),
 		ConfigOptions: []grpc.DialOption{
 			grpc.WithTransportCredentials(insecure.NewCredentials()),
 			grpc.WithBlock(),
 		},
 	}
 	if *env != "" {
-		poolConfig.Address = fmt.Sprintf("cached.tacticallinux.com:%s", *port)
+		poolConfig.Address = fmt.Sprintf("cached:%s", *port)
 	}
 
 	fmt.Println(poolConfig.Address)
