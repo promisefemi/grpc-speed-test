@@ -30,9 +30,9 @@ func main() {
 	env := flag.String("e", "", "Env")
 	flag.Parse()
 
-	address := fmt.Sprintf(":%s", *port)
+	address := fmt.Sprintf("cached:%s", *port)
 	if *env != "" {
-		address = fmt.Sprintf("cached:%s", *port)
+		address = fmt.Sprintf(":%s", *port)
 	}
 
 	fmt.Println(address)
