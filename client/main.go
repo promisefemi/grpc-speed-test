@@ -34,7 +34,7 @@ func main() {
 		MaxOpenConnection:     10,
 		MaxIdleConnection:     10,
 		ConnectionQueueLength: 1000,
-		NewClientDuration:     4 * time.Second,
+		NewClientDuration:     10 * time.Second,
 		Address:               fmt.Sprintf(":%s", *port),
 		ConfigOptions: []grpc.DialOption{
 			grpc.WithTransportCredentials(insecure.NewCredentials()),
