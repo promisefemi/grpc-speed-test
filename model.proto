@@ -1,0 +1,130 @@
+syntax = "proto3";
+
+// import "google/protobuf/timestamp.proto";
+
+option go_package = "./proto";
+
+service Cache {
+  rpc GetDevice (DeviceInput) returns (Device);
+
+}
+
+
+enum OperationEnum {
+  sum = 0;
+  min = 1;
+  max = 2;
+  avg = 3;
+  cnt = 4;
+}
+
+
+enum FrameType{
+  _ = 0;
+  FT_SAMPLE = 1;
+  FT_STATE = 2;
+  FT_LOG = 3;
+  FT_EVENT = 4;
+  FT_OTA = 5;
+  FT_HEARTBEAT = 6;
+  FT_BOOT = 7;
+  FT_ORIENT = 8;
+  FT_KEY_N = 9;
+  FT_KEY_KK = 10;
+  FT_KEY_XX = 11;
+}
+
+
+message DeviceInput{
+  int64 Id = 1;
+  FrameType FrameType = 2;
+}
+message DeviceIdInput{
+  int64 Id = 1;
+}
+
+message Device {
+  int64 Id = 1;
+  int32 Type = 2;
+  string HardwareId = 3;
+  string FirmwareId = 4;
+  int64 BridgeId = 5;
+  int32 UserId = 16;
+  string Timezone = 17;
+  float SampleMultiplier = 6;
+  string Settings = 7;
+  int32 TsSchemaVer = 8;
+  int32 LastSeen = 9;
+  string LastNode = 10;
+  int64 LastSampleValue = 11;
+  int32 LastSampleDateTime = 12;
+  int32  Connected = 13;
+  string AxisCalibration = 14;
+  map <int32, DeviceRule> DeviceRules = 15;
+}
+
+message DeviceState{
+  int64 Id = 1;
+  int32 Type = 2;
+  map <string, int32> States = 3;
+}
+
+message DeviceUpdate {
+  int64 Id = 1;
+  FrameType FrameType = 2;
+  int32 LastSeen = 3;
+  string LastNode = 4;
+  int32  Connected = 5;
+  int64 LastSampleValue = 6;
+  string LastSampleDateTime = 7;
+
+  //  Frame type (Calibration)
+  string AxisCalibration = 8;
+
+  //  Frame type (Boot)
+  string FirmwareId = 9;
+  int64 BridgeId = 10;
+}
+
+message DeviceRules{
+  repeated  DeviceRule Rules = 1;
+}
+
+
+message DeviceRule{
+  int32 Id = 1;
+  int32 Active = 2;
+  int32 Type = 3;
+  int64 DeviceId = 4;
+  int32 Bucket = 5;
+  int32 BucketCount = 6;
+  string Property = 7;
+  int32 SinceDateTime = 8;
+  int32 UntilDateTime = 9;
+  string  Comparison = 10;
+  int32 GroupMultiplier = 11;
+  OperationEnum Operation = 12;
+  float Value = 13;
+  int32 LastTrigger = 14; //R/W
+  int32  NextEval = 15; //R/W
+  int32 NextEvalSecs = 16; //R/W
+}
+
+message DeviceRuleUpdate {
+  int32 Id = 1;
+  int64 DeviceId = 2;
+  int32 LastTrigger = 3;
+  int32 NextEval = 4;
+  int32 NextEvalSecs = 5;
+}
+
+message  BridgeState{
+  int32 Id = 1;
+  int32 C1 = 2;
+  int32 C2 = 3;
+}
+message  SensorState{
+  int32 Id = 1;
+  int32 C1 = 2;
+  int32 C2 = 3;
+}
