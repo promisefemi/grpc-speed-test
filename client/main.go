@@ -35,7 +35,7 @@ func main() {
 		MaxIdleConnection:     10,
 		ConnectionQueueLength: 1000,
 		NewClientDuration:     10 * time.Second,
-		Address:               "cached.tacticallinux.com:9009",
+		Address:               "cached:9009",
 		//Address:               fmt.Sprintf(":%s", *port),
 		ConfigOptions: []grpc.DialOption{
 			grpc.WithTransportCredentials(insecure.NewCredentials()),
