@@ -44,6 +44,8 @@ func main() {
 	if *env != "" {
 		poolConfig.Address = fmt.Sprintf("cached.tacticallinux.com:%s", *port)
 	}
+
+	fmt.Println(poolConfig.Address)
 	var deviceId int64 = 6248148189135751453
 	poolCon := pool.NewClientPool(poolConfig)
 
