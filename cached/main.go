@@ -47,21 +47,26 @@ type counter struct {
 var deviceCount counter
 
 func (s service) GetDevice(ctx context.Context, deviceInput *proto.DeviceInput) (*proto.Device, error) {
-	protoDevice := new(proto.Device)
 
-	device, ok := s.cache.Data[deviceInput.Id]
-	if !ok {
-		return nil, fmt.Errorf("could not find device in cache")
-	}
-	err := unPackToProto(device, protoDevice)
-	if err != nil {
-		log.Println(err)
-		return nil, err
-	}
-	deviceCount.Lock()
-	deviceCount.currentCount++
-	deviceCount.totalCount++
-	deviceCount.Unlock()
+	resChannel := make(chan *proto.Device)
+	go func() {
+		protoDevice := new(proto.Device)
+
+		device, _ := s.cache.Data[deviceInput.Id]
+		//if !ok {
+		//	return nil, fmt.Errorf("could not find device in cache")
+		//}
+		err := unPackToProto(device, protoDevice)
+		if err != nil {
+			log.Println(err)
+		}
+		deviceCount.Lock()
+		deviceCount.currentCount++
+		deviceCount.totalCount++
+		deviceCount.Unlock()
+		resChannel <- protoDevice
+	}()
+	protoDevice := <-resChannel
 	return protoDevice, nil
 }
 
